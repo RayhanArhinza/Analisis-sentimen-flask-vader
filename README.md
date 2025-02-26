@@ -63,9 +63,7 @@ Jika terjadi error, coba jalankan perintah berikut:
   pip uninstall -r requirements.txt -y
   pip install -r requirements.txt
   ```
-
-## 📜 Lisensi
-Proyek ini menggunakan lisensi MIT atau lisensi lain sesuai kebutuhan Anda.
+=
 
 ---
 🔥 Selamat coding! Jika ada pertanyaan, jangan ragu untuk menghubungi saya! 😊
