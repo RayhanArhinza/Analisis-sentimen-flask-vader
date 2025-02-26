@@ -1,0 +1,24 @@
+.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter {
+    @apply mb-4;
+}
+.dataTables_wrapper .dataTables_length select {
+    @apply border border-gray-300 rounded-md py-1 px-2 mr-2 focus:ring-indigo-500 focus:border-indigo-500;
+}
+.dataTables_wrapper .dataTables_filter input {
+    @apply border border-gray-300 rounded-md py-1 px-3 ml-2 focus:ring-indigo-500 focus:border-indigo-500;
+}
+.dataTables_wrapper .dataTables_info {
+    @apply py-4 text-sm text-gray-600;
+}
+.dataTables_wrapper .dataTables_paginate {
+    @apply py-4;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    @apply px-3 py-1 mx-1 text-sm rounded-md border border-gray-300;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    @apply bg-indigo-600 text-white border-indigo-600;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    @apply bg-gray-100;
+}

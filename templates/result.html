@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        positive: '#0d9488',
+                        negative: '#b91c1c',
+                        neutral: '#6b7280',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center mb-4">
+                <span class="px-4 py-1 rounded-full bg-indigo-100 text-indigo-800 text-sm font-medium">
+                    <i class="fas fa-chart-pie mr-2"></i>
+                    Analisis Selesai
+                </span>
+            </div>
+            <h1 class="text-4xl font-bold text-indigo-800 mb-2">Hasil Analisis Sentimen</h1>
+            <p class="text-xl text-gray-600">Analisis untuk file {{ filename }}</p>
+            <div class="mt-6">
+                <a href="/" class="inline-flex items-center px-6 py-3 rounded-lg border border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors duration-300">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Kembali ke Upload
+                </a>
+            </div>
+        </div>
+        
+        <!-- Distribution Chart Section -->
+        <div class="mb-16">
+            <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+                <div class="p-6 bg-indigo-800 text-white">
+                    <h2 class="text-2xl font-semibold flex items-center">
+                        <i class="fas fa-chart-pie mr-3"></i>
+                        Distribusi Sentimen
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <img src="data:image/png;base64,{{ chart_data }}" alt="Sentiment Distribution Chart" class="max-w-full h-auto mx-auto">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <!-- Positive Stats -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-4 bg-positive/10">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-positive/20 flex items-center justify-center">
+                                <i class="fas fa-smile text-positive text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-positive">Sentimen Positif</h3>
+                            <div class="mt-1 text-3xl font-bold text-positive">
+                                {{ (data|selectattr('sentiment', 'equalto', 'Positive')|list|length / data|length * 100)|round|int }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Neutral Stats -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-4 bg-neutral/10">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-neutral/20 flex items-center justify-center">
+                                <i class="fas fa-meh text-neutral text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-neutral">Sentimen Netral</h3>
+                            <div class="mt-1 text-3xl font-bold text-neutral">
+                                {{ (data|selectattr('sentiment', 'equalto', 'Neutral')|list|length / data|length * 100)|round|int }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Negative Stats -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="p-4 bg-negative/10">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-negative/20 flex items-center justify-center">
+                                <i class="fas fa-frown text-negative text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-negative">Sentimen Negatif</h3>
+                            <div class="mt-1 text-3xl font-bold text-negative">
+                                {{ (data|selectattr('sentiment', 'equalto', 'Negative')|list|length / data|length * 100)|round|int }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Table Section -->
+        <div class="mb-16">
+            <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+                <div class="p-6 bg-indigo-800 text-white">
+                    <h2 class="text-2xl font-semibold flex items-center">
+                        <i class="fas fa-table mr-3"></i>
+                        Hasil Detail
+                    </h2>
+                </div>
+                <div class="p-6 overflow-x-auto">
+                    <table id="resultsTable" class="w-full min-w-full">
+                        <thead>
+                            <tr class="bg-gray-100 text-left">
+                                <th class="px-4 py-3 text-gray-700 font-semibold">Teks Asli</th>
+                                <th class="px-4 py-3 text-gray-700 font-semibold">Teks Diproses</th>
+                                <th class="px-4 py-3 text-gray-700 font-semibold">Sentimen</th>
+                                <th class="px-4 py-3 text-gray-700 font-semibold">Confidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data %}
+                            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                <td class="px-4 py-3 text-gray-800">{{ row.original_text }}</td>
+                                <td class="px-4 py-3 text-gray-600">{{ row.processed_text }}</td>
+                                <td class="px-4 py-3">
+                                    {% if row.sentiment == 'Positive' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-positive bg-positive/10 font-medium">
+                                        <i class="fas fa-smile mr-1"></i> Positif
+                                    </span>
+                                    {% elif row.sentiment == 'Negative' %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-negative bg-negative/10 font-medium">
+                                        <i class="fas fa-frown mr-1"></i> Negatif
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-neutral bg-neutral/10 font-medium">
+                                        <i class="fas fa-meh mr-1"></i> Netral
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="relative pt-1">
+                                        <div class="flex items-center">
+                                            <div class="mr-2 text-sm font-medium">
+                                                {{ "%.2f"|format(row.confidence) }}
+                                            </div>
+                                            <div class="w-24 bg-gray-200 rounded-full h-2">
+                                                <div class="h-2 rounded-full 
+                                                    {% if row.sentiment == 'Positive' %} bg-positive
+                                                    {% elif row.sentiment == 'Negative' %} bg-negative
+                                                    {% else %} bg-neutral
+                                                    {% endif %}"
+                                                    style="width: {{ row.confidence * 100 }}%">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <head>
+            <script src="https://kit.fontawesome.com/YOUR_KIT_CODE.js" crossorigin="anonymous"></script>
+        </head>
+        
+        <div class="text-center text-gray-500 text-sm py-8">
+            <p>&copy; 2025 Sentiment Analysis Tool.</p>
+            <div class="flex justify-center gap-4 mt-2">
+                <a href="https://github.com/yourusername" target="_blank" class="text-gray-500 hover:text-black">
+                    <i class="fab fa-github text-2xl"></i>
+                </a>
+                <a href="https://www.instagram.com/rayhansaneval" target="_blank" class="text-gray-500 hover:text-pink-500">
+                    <i class="fab fa-instagram text-2xl"></i>
+                </a>
+            </div>
+        </div>
+        
+        
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#resultsTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]],
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                    infoFiltered: "(disaring dari _MAX_ total data)",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Selanjutnya",
+                        previous: "Sebelumnya"
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

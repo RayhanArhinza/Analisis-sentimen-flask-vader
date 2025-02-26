@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen py-12 px-4 sm:px-6">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-indigo-800 mb-2">Sentiment Analysis</h1>
+            <p class="text-xl text-indigo-600">Powered by Vader</p>
+            <div class="mt-4 flex justify-center">
+                <span class="px-4 py-1 rounded-full bg-indigo-100 text-indigo-800 inline-flex items-center">
+                    <i class="fas fa-robot mr-2"></i>
+                    <span>Analisis Sentimen Bahasa Inggris</span>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Main Card -->
+        <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+            <!-- Upload Area -->
+            <div class="p-8">
+                <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                    <div class="space-y-2">
+                        <label for="file" class="block text-lg font-medium text-gray-700">Pilih File</label>
+                        <div class="relative border-2 border-dashed border-indigo-300 rounded-lg p-6 bg-indigo-50 transition-all duration-300 hover:bg-indigo-100 hover:border-indigo-400">
+                            <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="file" name="file" accept=".csv, .xlsx">
+                            <div class="text-center">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-indigo-500 mb-3"></i>
+                                <p class="text-indigo-800 font-medium">Tarik file CSV atau Excel ke sini</p>
+                                <p class="text-sm text-gray-500 mt-1">atau klik untuk memilih file</p>
+                                <p class="text-xs text-gray-500 mt-4">Format yang didukung: CSV, XLSX</p>
+                            </div>
+                        </div>
+                        <div id="file-name" class="text-sm text-gray-500 mt-2 hidden">
+                            <span class="font-medium">File terpilih:</span> <span id="selected-file"></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Analisis Sentimen
+                    </button>
+                </form>
+                
+                <!-- Error Message -->
+                {% if error %}
+                <div class="mt-6 p-4 border-l-4 border-red-500 bg-red-50 rounded">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-circle text-red-500 mr-3 mt-0.5"></i>
+                        <div>
+                            <p class="text-red-700">{{ error }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Column Selection -->
+                {% if columns %}
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h5 class="text-lg font-medium text-gray-900 mb-3">Pilih Kolom Teks</h5>
+                    <p class="text-gray-600 mb-4">Silakan pilih kolom yang berisi teks untuk dianalisis:</p>
+                    <form action="/analyze_with_column" method="POST" class="space-y-4">
+                        <input type="hidden" name="filename" value="{{ request.files.get('file').filename }}">
+                        <div>
+                            <select class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" name="column" required>
+                                {% for column in columns %}
+                                <option value="{{ column }}">{{ column }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full py-3 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md transition duration-300 flex items-center justify-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Analisis Kolom Terpilih
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Feature Highlights -->
+            <div class="bg-indigo-50 p-6">
+                <h3 class="text-lg font-medium text-indigo-900 mb-4">Fitur Utama</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                                <i class="fas fa-language text-indigo-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-800">Bahasa Inggris</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Dukungan analisis untuk Bahasa Inggris</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                                <i class="fas fa-bolt text-indigo-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-800">Cepat</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Analisis cepat untuk file berukuran besar</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center mb-2">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-2">
+                                <i class="fas fa-file-excel text-indigo-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-800">Multi-format</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Dukungan untuk file CSV dan Excel</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center text-gray-500 text-sm py-8">
+            <p>&copy; 2025 Sentiment Analysis Tool.</p>
+            <div class="flex justify-center gap-4 mt-2">
+                <a href="https://github.com/yourusername" target="_blank" class="text-gray-500 hover:text-black">
+                    <i class="fab fa-github text-2xl"></i>
+                </a>
+                <a href="https://www.instagram.com/rayhansaneval" target="_blank" class="text-gray-500 hover:text-pink-500">
+                    <i class="fab fa-instagram text-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('file').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const fileName = e.target.files[0].name;
+                document.getElementById('selected-file').textContent = fileName;
+                document.getElementById('file-name').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
